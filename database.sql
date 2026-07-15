@@ -1,16 +1,11 @@
--- =====================================================================
 -- PIZZERÍA DON PICCOLO - Script de Creación de Base de Datos y Tablas
--- =====================================================================
 -- Ejecutar este script primero. Crea la base de datos, las 9 tablas
 -- con sus relaciones (FOREIGN KEY) y los datos de prueba iniciales.
--- =====================================================================
 
 CREATE DATABASE IF NOT EXISTS pizzeria_don_piccolo;
 USE pizzeria_don_piccolo;
 
--- =====================================================================
 -- TABLAS MAESTRAS (no dependen de otras tablas)
--- =====================================================================
 
 CREATE TABLE clientes (
     id_cliente INT AUTO_INCREMENT PRIMARY KEY,
@@ -37,9 +32,7 @@ CREATE TABLE ingredientes (
     costo_por_unidad DECIMAL(10, 2) NOT NULL
 );
 
--- =====================================================================
 -- TABLA PUENTE (Relación Muchos a Muchos entre pizzas e ingredientes)
--- =====================================================================
 
 CREATE TABLE pizza_ingredientes (
     id_pizza INT,
@@ -50,9 +43,7 @@ CREATE TABLE pizza_ingredientes (
     FOREIGN KEY (id_ingrediente) REFERENCES ingredientes(id_ingrediente) ON DELETE CASCADE
 );
 
--- =====================================================================
 -- TABLA DE REPARTIDORES
--- =====================================================================
 
 CREATE TABLE repartidores (
     id_repartidor INT AUTO_INCREMENT PRIMARY KEY,
@@ -61,9 +52,7 @@ CREATE TABLE repartidores (
     estado ENUM('Disponible', 'No Disponible') NOT NULL DEFAULT 'Disponible'
 );
 
--- =====================================================================
 -- TABLAS TRANSACCIONALES (dependen de las maestras)
--- =====================================================================
 
 CREATE TABLE pedidos (
     id_pedido INT AUTO_INCREMENT PRIMARY KEY,
@@ -97,9 +86,7 @@ CREATE TABLE domicilios (
     FOREIGN KEY (id_repartidor) REFERENCES repartidores(id_repartidor)
 );
 
--- =====================================================================
 -- TABLA DE AUDITORÍA (se alimenta automáticamente por un trigger)
--- =====================================================================
 
 CREATE TABLE historial_precios (
     id_historial INT AUTO_INCREMENT PRIMARY KEY,
@@ -110,9 +97,7 @@ CREATE TABLE historial_precios (
     FOREIGN KEY (id_pizza) REFERENCES pizzas(id_pizza) ON DELETE CASCADE
 );
 
--- =====================================================================
 -- DATOS DE PRUEBA
--- =====================================================================
 
 -- Clientes
 INSERT INTO clientes (nombre, telefono, direccion, correo) VALUES 
