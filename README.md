@@ -144,6 +144,8 @@ El esquema contiene **9 tablas** organizadas así:
 |--------|------------|-----|
 | `registrar_hora_entrega(id_domicilio, hora)` | Registra hora de entrega y cambia el estado del pedido a "Entregado" | `CALL registrar_hora_entrega(1, NOW());` |
 
+![Funciones y Procedimientos](Img/funciones.png)
+
 ### Triggers (`triggers.sql`)
 
 | Nombre | Evento | Descripción |
@@ -151,6 +153,8 @@ El esquema contiene **9 tablas** organizadas así:
 | `tr_actualizar_stock_ingredientes` | `AFTER INSERT` en `pedido_detalles` | Descuenta automáticamente los ingredientes del inventario según la receta |
 | `tr_auditoria_precio_pizza` | `AFTER UPDATE` en `pizzas` | Registra en `historial_precios` cada cambio de precio |
 | `tr_repartidor_disponible_entrega` | `AFTER UPDATE` en `domicilios` | Cambia el estado del repartidor a "Disponible" al registrar la hora de entrega |
+
+![Triggers](Img/triggers.png)
 
 ---
 
@@ -161,6 +165,8 @@ El esquema contiene **9 tablas** organizadas así:
 | `vista_resumen_clientes` | Nombre del cliente, cantidad de pedidos y total gastado | `SELECT * FROM vista_resumen_clientes;` |
 | `vista_desempeno_repartidores` | Número de entregas, tiempo promedio en minutos y zona | `SELECT * FROM vista_desempeno_repartidores;` |
 | `vista_alertas_stock` | Ingredientes con stock por debajo del mínimo permitido | `SELECT * FROM vista_alertas_stock;` |
+
+![Vistas](Img/vistas.png)
 
 ---
 
@@ -173,6 +179,7 @@ FROM clientes c
 JOIN pedidos p ON c.id_cliente = p.id_cliente
 WHERE p.fecha_hora BETWEEN '2025-03-01 00:00:00' AND '2025-03-31 23:59:59';
 ```
+![Consulta 1](Img/Consultas/primera.png)
 
 ### 2. Pizzas más vendidas (GROUP BY y SUM)
 ```sql
@@ -182,6 +189,7 @@ JOIN pedido_detalles pd ON pz.id_pizza = pd.id_pizza
 GROUP BY pz.id_pizza, pz.nombre, pz.tamano
 ORDER BY total_vendidas DESC;
 ```
+![Consulta 2](Img/Consultas/segunda.png)
 
 ### 3. Pedidos por repartidor (JOIN múltiple)
 ```sql
@@ -191,6 +199,7 @@ JOIN domicilios d ON r.id_repartidor = d.id_repartidor
 JOIN pedidos p ON d.id_pedido = p.id_pedido
 ORDER BY r.nombre, p.fecha_hora DESC;
 ```
+![Consulta 3](Img/Consultas/tercera.png)
 
 ### 4. Promedio de entrega por zona (AVG y JOIN)
 ```sql
@@ -201,6 +210,7 @@ JOIN domicilios d ON r.id_repartidor = d.id_repartidor
 WHERE d.hora_entrega IS NOT NULL
 GROUP BY r.zona_asignada;
 ```
+![Consulta 4](Img/Consultas/cuarta.png)
 
 ### 5. Clientes que gastaron más de un monto (HAVING)
 ```sql
@@ -210,6 +220,7 @@ JOIN pedidos p ON c.id_cliente = p.id_cliente
 GROUP BY c.id_cliente, c.nombre
 HAVING SUM(p.total) > 500.00;
 ```
+![Consulta 5](Img/Consultas/quinta.png)
 
 ### 6. Búsqueda parcial de pizza (LIKE)
 ```sql
@@ -217,6 +228,7 @@ SELECT nombre, tamano, precio_base, tipo
 FROM pizzas
 WHERE nombre LIKE '%Queso%';
 ```
+![Consulta 6](Img/Consultas/sexta.png)
 
 ### 7. Clientes frecuentes del mes actual (Subconsulta)
 ```sql
@@ -225,12 +237,13 @@ FROM clientes
 WHERE id_cliente IN (
     SELECT id_cliente
     FROM pedidos
-    WHERE MONTH(fecha_hora) = MONTH(CURRENT_DATE()) 
-      AND YEAR(fecha_hora) = YEAR(CURRENT_DATE())
+    WHERE MONTH(fecha_hora) = 3 
+      AND YEAR(fecha_hora) = 2025
     GROUP BY id_cliente
-    HAVING COUNT(id_pedido) > 5
+    HAVING COUNT(id_pedido) > 1
 );
 ```
+![Consulta 7](Img/Consultas/septima.png)
 
 ---
 
@@ -245,5 +258,7 @@ Ejecutar los scripts **en el siguiente orden** en un cliente de MySQL (Workbench
 | 3 | `triggers.sql` | Establece los 3 triggers de automatización |
 | 4 | `vistas.sql` | Crea las 3 vistas de reportes |
 | 5 | `consultas.sql` | *(Opcional)* Ejecuta las consultas analíticas de prueba |
+
+![Ejecución de Base de Datos](Img/base%20de%20datos%20ejecucion.png)
 
 > **Requisito:** MySQL 5.7 o superior. Asegúrate de tener permisos para crear bases de datos, funciones y triggers.
