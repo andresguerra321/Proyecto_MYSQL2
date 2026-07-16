@@ -17,7 +17,6 @@ El sistema incluye lógica de negocio automatizada mediante funciones, procedimi
  ├── triggers.sql      → Triggers de automatización
  ├── vistas.sql        → Vistas de reportes
  ├── consultas.sql     → Consultas SQL complejas
- ├── PASO_A_PASO.md    → Tutorial detallado de construcción del proyecto
  └── README.md         → Este archivo
 ```
 
