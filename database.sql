@@ -2,6 +2,7 @@
 -- Ejecutar este script primero. Crea la base de datos, las 9 tablas
 -- con sus relaciones (FOREIGN KEY) y los datos de prueba iniciales.
 
+DROP DATABASE IF EXISTS pizzeria_don_piccolo;
 CREATE DATABASE IF NOT EXISTS pizzeria_don_piccolo;
 USE pizzeria_don_piccolo;
 
