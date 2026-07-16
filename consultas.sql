@@ -4,7 +4,7 @@ USE pizzeria_don_piccolo;
 SELECT DISTINCT c.nombre, c.telefono, c.correo
 FROM clientes c
 JOIN pedidos p ON c.id_cliente = p.id_cliente
-WHERE p.fecha_hora BETWEEN '2023-01-01 00:00:00' AND '2023-12-31 23:59:59';
+WHERE p.fecha_hora BETWEEN '2025-03-01 00:00:00' AND '2025-03-31 23:59:59';
 
 -- 2. Pizzas más vendidas (GROUP BY y COUNT).
 SELECT pz.nombre, pz.tamano, SUM(pd.cantidad) AS total_vendidas
@@ -42,14 +42,14 @@ SELECT nombre, tamano, precio_base, tipo
 FROM pizzas
 WHERE nombre LIKE '%Queso%';
 
--- 7. Subconsulta para obtener los clientes frecuentes (más de 5 pedidos mensuales).
+-- 7. Subconsulta para obtener los clientes frecuentes (más de 1 pedido mensual).
 SELECT nombre, telefono, correo
 FROM clientes
 WHERE id_cliente IN (
     SELECT id_cliente
     FROM pedidos
-    WHERE MONTH(fecha_hora) = MONTH(CURRENT_DATE()) 
-      AND YEAR(fecha_hora) = YEAR(CURRENT_DATE())
+    WHERE MONTH(fecha_hora) = 3 
+      AND YEAR(fecha_hora) = 2025
     GROUP BY id_cliente
-    HAVING COUNT(id_pedido) > 5
+    HAVING COUNT(id_pedido) > 1
 );
