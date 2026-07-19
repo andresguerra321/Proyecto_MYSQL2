@@ -1,40 +1,40 @@
 USE pizzeria_don_piccolo;
 
 -- 1. Clientes con pedidos entre dos fechas (BETWEEN).
-SELECT DISTINCT c.nombre, c.telefono, c.correo
-FROM clientes c
-JOIN pedidos p ON c.id_cliente = p.id_cliente
-WHERE p.fecha_hora BETWEEN '2025-03-01 00:00:00' AND '2025-03-31 23:59:59';
+SELECT DISTINCT clientes.nombre, clientes.telefono, clientes.correo
+FROM clientes
+JOIN pedidos ON clientes.id_cliente = pedidos.id_cliente
+WHERE pedidos.fecha_hora BETWEEN '2025-03-01 00:00:00' AND '2025-03-31 23:59:59';
 
 -- 2. Pizzas más vendidas (GROUP BY y COUNT).
-SELECT pz.nombre, pz.tamano, SUM(pd.cantidad) AS total_vendidas
-FROM pizzas pz
-JOIN pedido_detalles pd ON pz.id_pizza = pd.id_pizza
-GROUP BY pz.id_pizza, pz.nombre, pz.tamano
+SELECT pizzas.nombre, pizzas.tamano, SUM(pedido_detalles.cantidad) AS total_vendidas
+FROM pizzas
+JOIN pedido_detalles ON pizzas.id_pizza = pedido_detalles.id_pizza
+GROUP BY pizzas.id_pizza, pizzas.nombre, pizzas.tamano
 ORDER BY total_vendidas DESC;
 
 -- 3. Pedidos por repartidor (JOIN).
-SELECT r.nombre AS repartidor, r.zona_asignada, p.id_pedido, p.fecha_hora, p.estado
-FROM repartidores r
-JOIN domicilios d ON r.id_repartidor = d.id_repartidor
-JOIN pedidos p ON d.id_pedido = p.id_pedido
-ORDER BY r.nombre, p.fecha_hora DESC;
+SELECT repartidores.nombre AS repartidor, repartidores.zona_asignada, pedidos.id_pedido, pedidos.fecha_hora, pedidos.estado
+FROM repartidores
+JOIN domicilios ON repartidores.id_repartidor = domicilios.id_repartidor
+JOIN pedidos ON domicilios.id_pedido = pedidos.id_pedido
+ORDER BY repartidores.nombre, pedidos.fecha_hora DESC;
 
 -- 4. Promedio de entrega por zona (AVG y JOIN).
-SELECT r.zona_asignada, 
-       AVG(TIMESTAMPDIFF(MINUTE, d.hora_salida, d.hora_entrega)) AS promedio_minutos
-FROM repartidores r
-JOIN domicilios d ON r.id_repartidor = d.id_repartidor
-WHERE d.hora_entrega IS NOT NULL
-GROUP BY r.zona_asignada;
+SELECT repartidores.zona_asignada, 
+       AVG(TIMESTAMPDIFF(MINUTE, domicilios.hora_salida, domicilios.hora_entrega)) AS promedio_minutos
+FROM repartidores
+JOIN domicilios ON repartidores.id_repartidor = domicilios.id_repartidor
+WHERE domicilios.hora_entrega IS NOT NULL
+GROUP BY repartidores.zona_asignada;
 
 -- 5. Clientes que gastaron más de un monto (HAVING).
 -- Ejemplo: Clientes que han gastado más de $500.00 en total.
-SELECT c.nombre, SUM(p.total) AS total_gastado
-FROM clientes c
-JOIN pedidos p ON c.id_cliente = p.id_cliente
-GROUP BY c.id_cliente, c.nombre
-HAVING SUM(p.total) > 500.00;
+SELECT clientes.nombre, SUM(pedidos.total) AS total_gastado
+FROM clientes
+JOIN pedidos ON clientes.id_cliente = pedidos.id_cliente
+GROUP BY clientes.id_cliente, clientes.nombre
+HAVING SUM(pedidos.total) > 500.00;
 
 -- 6. Búsqueda por coincidencia parcial de nombre de pizza (LIKE).
 -- Ejemplo: Buscar pizzas que tengan la palabra 'Queso'.
