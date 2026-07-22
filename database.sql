@@ -49,8 +49,20 @@ CREATE TABLE pizza_ingredientes (
 CREATE TABLE repartidores (
     id_repartidor INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
+    telefono VARCHAR(20),
     zona_asignada VARCHAR(50),
-    estado ENUM('Disponible', 'No Disponible') NOT NULL DEFAULT 'Disponible'
+    estado ENUM('activo', 'inactivo') NOT NULL
+);
+
+-- TABLA DE CUPONES DE DESCUENTO (Nueva Funcionalidad Avanzada)
+
+CREATE TABLE cupones (
+    id_cupon INT AUTO_INCREMENT PRIMARY KEY,
+    codigo VARCHAR(20) NOT NULL UNIQUE,
+    porcentaje_descuento DECIMAL(5, 2) NOT NULL, -- Ej: 15.00 para 15%
+    usos_maximos INT NOT NULL,
+    usos_actuales INT NOT NULL DEFAULT 0,
+    fecha_caducidad DATE NOT NULL
 );
 
 -- TABLAS TRANSACCIONALES (dependen de las maestras)
@@ -58,11 +70,15 @@ CREATE TABLE repartidores (
 CREATE TABLE pedidos (
     id_pedido INT AUTO_INCREMENT PRIMARY KEY,
     id_cliente INT NOT NULL,
+    id_cupon INT NULL,
     fecha_hora DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     metodo_pago ENUM('Efectivo', 'Tarjeta', 'App') NOT NULL,
     estado ENUM('Pendiente', 'En preparación', 'En camino', 'Entregado', 'Cancelado') NOT NULL DEFAULT 'Pendiente',
+    descuento DECIMAL(10, 2) DEFAULT 0,
     total DECIMAL(10, 2) DEFAULT 0,
-    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente)
+    contabilizado BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente),
+    FOREIGN KEY (id_cupon) REFERENCES cupones(id_cupon)
 );
 
 CREATE TABLE pedido_detalles (
@@ -80,9 +96,8 @@ CREATE TABLE domicilios (
     id_pedido INT NOT NULL,
     id_repartidor INT NOT NULL,
     hora_salida DATETIME,
-    hora_entrega DATETIME,
-    distancia_km DECIMAL(5, 2),
-    costo_envio DECIMAL(10, 2) NOT NULL DEFAULT 0,
+    hora_entrega DATETIME NULL,
+    estado ENUM('En_camino', 'entregado', 'cancelado') NOT NULL,
     FOREIGN KEY (id_pedido) REFERENCES pedidos(id_pedido),
     FOREIGN KEY (id_repartidor) REFERENCES repartidores(id_repartidor)
 );
@@ -96,6 +111,34 @@ CREATE TABLE historial_precios (
     precio_nuevo DECIMAL(10, 2),
     fecha_modificacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_pizza) REFERENCES pizzas(id_pizza) ON DELETE CASCADE
+);
+
+-- TABLA DE CIERRE DE CAJA DIARIO (Nueva Funcionalidad Avanzada)
+
+CREATE TABLE cierre_diario (
+    id_cierre INT AUTO_INCREMENT PRIMARY KEY,
+    fecha DATE NOT NULL UNIQUE,
+    ventas_efectivo DECIMAL(10, 2) DEFAULT 0,
+    ventas_tarjeta DECIMAL(10, 2) DEFAULT 0,
+    ventas_app DECIMAL(10, 2) DEFAULT 0,
+    total_ventas DECIMAL(10, 2) DEFAULT 0,
+    costo_ingredientes DECIMAL(10, 2) DEFAULT 0,
+    ganancia_neta DECIMAL(10, 2) DEFAULT 0,
+    fecha_cierre DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- TABLA DE ALERTAS DE STOCK (se alimenta automáticamente por un evento programado)
+
+CREATE TABLE alertas_stock (
+    id_alerta INT AUTO_INCREMENT PRIMARY KEY,
+    id_ingrediente INT NOT NULL,
+    nombre_ingrediente VARCHAR(100) NOT NULL,
+    stock_actual DECIMAL(10, 2) NOT NULL,
+    stock_minimo DECIMAL(10, 2) NOT NULL,
+    cantidad_a_reponer DECIMAL(10, 2) NOT NULL,
+    fecha_alerta DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atendida BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (id_ingrediente) REFERENCES ingredientes(id_ingrediente)
 );
 
 -- DATOS DE PRUEBA
@@ -135,6 +178,11 @@ INSERT INTO pizza_ingredientes (id_pizza, id_ingrediente, cantidad_requerida) VA
 (4, 1, 200), (4, 4, 100), (4, 5, 80), (4, 8, 50), -- Vegetariana Suprema
 (5, 1, 180), (5, 7, 30), (5, 8, 40);        -- Margarita
 
+-- Cupones
+INSERT INTO cupones (codigo, porcentaje_descuento, usos_maximos, fecha_caducidad) VALUES 
+('EXAMEN20', 20.00, 5, '2026-12-31'),
+('PIZZAFREE', 100.00, 1, '2026-12-31');
+
 -- Repartidores
 INSERT INTO repartidores (nombre, zona_asignada) VALUES 
 ('Carlos Gomez', 'Zona Norte'),
@@ -164,3 +212,14 @@ INSERT INTO domicilios (id_pedido, id_repartidor, hora_salida, hora_entrega, dis
 (2, 2, '2025-03-10 13:20:00', '2025-03-10 13:55:00', 5.0, 7000.00),
 (3, 1, '2025-03-11 19:20:00', '2025-03-11 19:40:00', 2.0, 3000.00),
 (4, 3, '2025-03-12 20:15:00', '2025-03-12 20:50:00', 4.5, 6000.00);
+
+-- pedidos demorados: faltan datos de prueba
+-- 1. hora_salida
+-- 2. id_pedido
+-- 3. hora_entrega
+-- 4. minutos_demora
+
+-- entregas realizadas por repartidor: tambien faltan datos de prueba
+-- 1. nombre del repartidor
+-- 2. cantidad_entregas
+-- 3. total_acumulado
